@@ -1,50 +1,34 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useContext } from "react";
+import { login } from "../services/api";
+import { AuthContext } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
-    const [email, setEmail] = useState('')
-    const [ password, setPassword] = useState('')
-    const navigate = useNavigate();
+  const [form, setForm] = useState({ email: "", password: "" });
+  const { login: authLogin } = useContext(AuthContext);
+  const navigate = useNavigate();
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        const response = await fetch('http://localhost:5000/login', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ email, password })
-        });
-        if(response.ok) {
-            const data = await response.json();
-            localStorage.setItem('token', data.token);
-            navigate('/events')
-        }
-    }
-    return (
-        <div className='min-w-screen min-h-screen flex items-center justify-center bg-gray-800'>
-            <form onSubmit={handleSubmit} className='bg-white p-6 rounded shadow-md w-80'>
-                <h2 className='text-2xl font-bold mb-4'>Login</h2>
-                <input 
-                    type="email"
-                    placeholder='Correo'
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className='w-full p-2 border rounder mb-4'
-                />
-                <input 
-                    type="password"
-                    placeholder='Contraseña'
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className='w-full p-2 border rounder mb-4'
-                />
-                <button className='w-full bg-blue-500 text-white p-2 rounded'>
-                    Iniciar Sesion
-                </button>
-            </form>
-        </div>
-    )
-}
+  const handleChange = (e) =>
+    setForm({ ...form, [e.target.name]: e.target.value });
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const { data } = await login(form);
+    authLogin(data.token);
+    navigate("/events");
+  };
+
+  return (
+    <div className="p-5 w-h-sc">
+      <h2 className="text-2xl">Iniciar Sesión</h2>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <input type="email" name="email" placeholder="Email" className="border p-2 w-full" onChange={handleChange} />
+        <input type="password" name="password" placeholder="Contraseña" className="border p-2 w-full" onChange={handleChange} />
+        <button className="bg-blue-600 text-white px-4 py-2">Iniciar Sesión</button>
+      </form>
+    </div>
+  );
+};
 
 export default Login;
+
